@@ -7,11 +7,16 @@
 
 plugins {
     id 'idea'
+    id 'java'
+    id 'maven'
     id 'maven-publish'
     id 'java-library'
     id 'org.springframework.boot' version '2.1.9.RELEASE'
     id 'io.spring.dependency-management' version '1.0.8.RELEASE'
 }
+
+sourceCompatibility = 1.8 // java 8
+targetCompatibility = 1.8
 
 bootJar {
     enabled = false
@@ -63,4 +68,19 @@ artifacts {
     archives jar
     archives sourceJar
     archives javadocJar
+}
+
+// To specify a license in the pom:
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }
 }
