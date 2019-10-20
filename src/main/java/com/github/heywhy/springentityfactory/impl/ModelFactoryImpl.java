@@ -5,12 +5,12 @@ import com.github.javafaker.Faker;
 import com.github.heywhy.springentityfactory.contracts.EntityFactoryBuilder;
 import com.github.heywhy.springentityfactory.contracts.ModelFactory;
 import com.github.heywhy.springentityfactory.contracts.FactoryFunction;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class ModelFactoryImpl implements ModelFactory {
 
@@ -69,11 +69,20 @@ public class ModelFactoryImpl implements ModelFactory {
         return of(model).make(count);
     }
 
+    @Override
+    public <T> EntityFactoryBuilder<T> pipe(Class<T> model) {
+        return of(model);
+    }
+
     private String getStateName(Class model, String name) {
         return model.getSimpleName() + '@' + name;
     }
 
     private <T> EntityFactoryBuilder of(Class<T> model) {
-        return new EntityFactoryBuilderImpl<>(model, definitions, faker, entityManager);
+        return of(model, null);
+    }
+
+    private <T> EntityFactoryBuilder of(Class<T> model, Function<T, T> operator) {
+        return new EntityFactoryBuilderImpl<>(model, definitions, faker, entityManager, operator);
     }
 }

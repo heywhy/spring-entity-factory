@@ -6,6 +6,7 @@ import com.github.heywhy.springentityfactory.contracts.FactoryFunction;
 
 import javax.persistence.EntityManager;
 import java.util.*;
+import java.util.function.Function;
 
 public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
 
@@ -13,6 +14,7 @@ public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
     private Class<T> tClass;
     private String name = "default";
     private EntityManager entityManager;
+    private Function<T, T> operator;
     private Map<Class, FactoryFunction> definitions;
     private Set<String> activeStates = new HashSet<>();
 
@@ -20,10 +22,12 @@ public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
             Class<T> tClass,
             Map<Class, FactoryFunction> definitions,
             Faker faker,
-            EntityManager entityManager
+            EntityManager entityManager,
+            Function<T, T> operator
     ) {
         this.faker = faker;
         this.tClass = tClass;
+        this.operator = operator;
         this.definitions = definitions;
         this.entityManager = entityManager;
     }
@@ -50,7 +54,7 @@ public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
     @Override
     public List<T> create(int count) {
         List<T> instances = make(count);
-        instances.forEach(entityManager::merge);
+        instances.forEach(entityManager::persist);
 
         return instances;
     }
@@ -67,7 +71,21 @@ public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
 
     @Override
     public T make() {
+        if (operator != null) {
+            return operator.apply(makeInstance());
+        }
         return makeInstance();
+    }
+
+    @Override
+    public EntityFactoryBuilder<T> then(Function<T, T> ttFunction) {
+        if (operator != null) {
+            Function<T, T> op = operator;
+            operator = t -> ttFunction.apply(op.apply(t));
+        } else {
+            operator = ttFunction;
+        }
+        return this;
     }
 
     private <A> T makeInstance() {

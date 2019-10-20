@@ -2,6 +2,7 @@ package com.github.heywhy.springentityfactory.contracts;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public interface EntityFactoryBuilder<T> {
     T make();
@@ -10,4 +11,5 @@ public interface EntityFactoryBuilder<T> {
     List<T> create(int count);
     EntityFactoryBuilder state(String name);
     EntityFactoryBuilder state(Set<String> states);
+    EntityFactoryBuilder<T> then(Function<T, T> ttFunction);
 }
