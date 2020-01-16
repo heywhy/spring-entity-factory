@@ -32,6 +32,7 @@ public class TypeValueGenerator {
 
         Class[] decimals = {Double.class, Float.class, Long.class};
         add(decimals, faker -> faker.number().randomNumber());
+        add(Short.class, f -> 0);
     }
 
     public static interface Generator<T> {
