@@ -1,14 +1,16 @@
 package com.github.heywhy.springentityfactory.impl;
 
+import com.github.heywhy.springentityfactory.TypeValueGenerator;
 import com.github.javafaker.Faker;
 import com.github.heywhy.springentityfactory.contracts.EntityFactoryBuilder;
 import com.github.heywhy.springentityfactory.contracts.FactoryFunction;
 
 import javax.persistence.EntityManager;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 
-public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
+public class EntityFactoryBuilderImpl<T extends Object> implements EntityFactoryBuilder<T> {
 
     private Faker faker;
     private Class<T> tClass;
@@ -72,9 +74,9 @@ public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
     @Override
     public T make() {
         if (operator != null) {
-            return operator.apply(makeInstance());
+            return operator.apply(makeInstance(tClass));
         }
-        return makeInstance();
+        return makeInstance(tClass);
     }
 
     @Override
@@ -88,13 +90,40 @@ public class EntityFactoryBuilderImpl<T> implements EntityFactoryBuilder<T> {
         return this;
     }
 
-    private <A> T makeInstance() {
-        if (!definitions.containsKey(tClass)) {
-            String msg = "Unable to locate factory with name [" + name + "] [" + tClass.getSimpleName() + "].";
-            throw new IllegalArgumentException(msg);
+    private <A> T makeInstance(Class<T> var) {
+        FactoryFunction<T> function = !definitions.containsKey(var)
+            ? fakeInstanceFactory(var)
+            : (FactoryFunction<T>)definitions.get(var);
+        return function.apply(faker);
+    }
+
+    private <A> FactoryFunction<T> fakeInstanceFactory(Class<T> var) {
+        return (faker) -> {
+            try {
+                T instance = var.newInstance();
+                for (Field field : var.getDeclaredFields()) {
+                    boolean isAccessible = field.isAccessible();
+
+                    field.setAccessible(true);
+                    field.set(instance, getTypeValue(field.getType()));
+                    field.setAccessible(isAccessible);
+                }
+
+                return instance;
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                return null;
+            }
+        };
+    }
+
+    private Object getTypeValue(Class fieldType) {
+        TypeValueGenerator.Generator generator = TypeValueGenerator.get(fieldType);
+        if (generator != null) {
+            return generator.apply(faker);
         }
 
-        FactoryFunction<T> function = (FactoryFunction<T>)definitions.get(tClass);
-        return function.apply(faker);
+        return makeInstance(fieldType);
     }
 }

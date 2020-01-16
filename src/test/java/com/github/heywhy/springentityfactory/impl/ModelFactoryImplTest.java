@@ -1,5 +1,6 @@
 package com.github.heywhy.springentityfactory.impl;
 
+import com.github.heywhy.springentityfactory.TypeValueGenerator;
 import com.github.heywhy.springentityfactory.contracts.FactoryHelper;
 import com.github.heywhy.springentityfactory.contracts.ModelFactory;
 import com.github.javafaker.Faker;
@@ -11,6 +12,7 @@ import org.mockito.Mockito;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
 
@@ -79,7 +81,15 @@ class ModelFactoryImplTest {
 
     @Test
     void testCreateNotDefinedEntity() {
-        assertThrows(IllegalArgumentException.class, () -> modelFactory.make(App.class));
+        // add a type generator before making and instance
+        TypeValueGenerator.add(BigDecimal.class, faker -> new BigDecimal(faker.number().randomNumber()));
+
+        Device device = modelFactory.make(Device.class);
+
+        assertNotNull(device);
+        assertNotNull(device.app);
+        assertNotNull(device.app.name);
+        assertNotNull(device.app.rating);
     }
 
     @Test
@@ -90,7 +100,14 @@ class ModelFactoryImplTest {
         assertEquals(3, posts.size());
     }
 
-    private static class App {}
+    public static class App {
+        private String name;
+        private BigDecimal rating;
+    }
+
+    public static class Device {
+        private App app;
+    }
 
     private class UserFactory implements FactoryHelper<User> {
         @Override
