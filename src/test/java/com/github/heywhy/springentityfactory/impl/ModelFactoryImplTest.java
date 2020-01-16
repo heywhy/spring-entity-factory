@@ -50,6 +50,8 @@ class ModelFactoryImplTest {
 
             return user;
         });
+
+        TypeValueGenerator.registerDefaults();
     }
 
     @Test

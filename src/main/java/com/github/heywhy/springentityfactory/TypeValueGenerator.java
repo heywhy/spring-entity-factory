@@ -23,6 +23,17 @@ public class TypeValueGenerator {
         return generators.get(klass);
     }
 
+    public static void registerDefaults() {
+
+        add(Boolean.class, faker -> faker.bool().bool());
+        add(String.class, faker -> faker.lorem().sentence());
+        add(Character.class, faker -> faker.lorem().character());
+        add(Integer.class, faker -> faker.number().randomDigit());
+
+        Class[] decimals = {Double.class, Float.class, Long.class};
+        add(decimals, faker -> faker.number().randomNumber());
+    }
+
     public static interface Generator<T> {
         T apply(Faker faker);
     }

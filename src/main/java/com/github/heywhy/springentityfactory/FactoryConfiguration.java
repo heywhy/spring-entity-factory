@@ -2,7 +2,6 @@ package com.github.heywhy.springentityfactory;
 
 import com.github.heywhy.springentityfactory.contracts.ModelFactory;
 import com.github.heywhy.springentityfactory.impl.ModelFactoryImpl;
-import com.github.javafaker.Bool;
 import com.github.javafaker.Faker;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -28,12 +27,6 @@ public class FactoryConfiguration {
 
     @PostConstruct
     public void initGenerators() {
-        TypeValueGenerator.add(Boolean.class, faker -> faker.bool().bool());
-        TypeValueGenerator.add(String.class, faker -> faker.lorem().sentence());
-        TypeValueGenerator.add(Character.class, faker -> faker.lorem().character());
-        TypeValueGenerator.add(Integer.class, faker -> faker.number().randomDigit());
-
-        Class[] decimals = {Double.class, Float.class, Long.class};
-        TypeValueGenerator.add(decimals, faker -> faker.number().randomNumber());
+        TypeValueGenerator.registerDefaults();
     }
 }
