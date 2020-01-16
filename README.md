@@ -1,5 +1,7 @@
 # spring-entity-factory
 
+[![](https://jitpack.io/v/heywhy/spring-entity-factory.svg)](https://jitpack.io/#heywhy/spring-entity-factory)
+
 This package helps to create and instance of a given type, this reduces boilerplate
 when creating an object to use during tests.
 
